@@ -1,8 +1,18 @@
-function showError(language: any, error: any) {
-  return "Something went wrong";
+interface ErrorMessages{
+   code:string;
+   errorMessage?:string;
+}
+function showError(language: any, error: ErrorMessages) {
+  if (error.code == "serverError") {
+    const {code,  errorMessage} = error;
+    return "Server return an error : " + errorMessage;
+  } else {
+    return "Something went wrong";
+  }
 }
 
 const english = {};
+const norwegian = {};
 
 describe("messages", () => {
   it("shows a message in english", () => {
@@ -19,5 +29,9 @@ describe("messages", () => {
     ).toBe("Server return an error : database timeout");
   });
 
-  it.todo("shows a message in another language");
+  it("shows a message in Norvegian", () => {
+    expect(showError(norwegian, { code: "generalError" })).toBe(
+      "Noe gikk galt"
+    );
+  });
 });
