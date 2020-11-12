@@ -12,6 +12,7 @@ type ErrorMessages = GeneralError | ServerError | IllegalArgument;
 interface ApplicationLanguage {
   generalError: string;
   serverError: (errorMessage: string) => string;
+  illegalArgument: (key: string, value: string) => string;
 }
 
 interface IllegalArgument {
@@ -21,21 +22,29 @@ interface IllegalArgument {
 }
 
 function showError(language: ApplicationLanguage, error: ErrorMessages) {
-  if (error.code === "serverError") {
-    const { code, errorMessage } = error;
-    return language.serverError(errorMessage);
-  } else {
-    return language.generalError;
+  switch (error.code) {
+    case "generalError":
+      return language.generalError;
+    case "serverError":
+      const { errorMessage } = error;
+      return language.serverError(errorMessage);
+    case "illegalArgument":
+      const { key, value } = error;
+      return language.illegalArgument(key, value);
   }
 }
 
 const english: ApplicationLanguage = {
   generalError: "Something went wrong",
-  serverError: (errorMessage) => "Server return an error " + errorMessage,
+  serverError: (errorMessage) => "Server return an error : " + errorMessage,
+  illegalArgument: (key, value) =>
+    "The value is illegal for " + key + ":" + value,
 };
 const norwegian: ApplicationLanguage = {
   generalError: "Noe gikk galt",
   serverError: (errorMessage) => "Server return an error " + errorMessage,
+  illegalArgument: (key, value) =>
+    "Verdien for '" + key + "' er ikke tillat: " + value,
 };
 
 describe("messages", () => {
