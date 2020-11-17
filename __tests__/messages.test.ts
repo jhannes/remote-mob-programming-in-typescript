@@ -1,8 +1,14 @@
 const english: ApplicationLanguage = {
   generalError: "Something went wrong",
+  serverError: (message: string) => "The server returned an error: " + message,
+  illegalArgument: (property: string, value: string) =>
+    `The value is illegal for ${property}: ${value}`,
 };
 const norwegian: ApplicationLanguage = {
   generalError: "Noe gikk galt",
+  serverError: (message: string) => "erveren returnerte en feil: " + message,
+  illegalArgument: (property: string, value: string) =>
+    `Verdien for ${property} er ikke tillatt: ${value}`,
 };
 
 interface GeneralError {
@@ -11,7 +17,7 @@ interface GeneralError {
 
 interface ServerError {
   error: "serverError";
-  message?: string;
+  message: string;
 }
 
 interface IllegalArgument {
@@ -24,6 +30,8 @@ type ErrorMessages = GeneralError | ServerError | IllegalArgument;
 
 interface ApplicationLanguage {
   generalError: string;
+  serverError: (message: string) => string;
+  illegalArgument: (property: string, value: string) => string;
 }
 
 function showError(
@@ -34,9 +42,10 @@ function showError(
     return language.generalError;
   } else if (errorMessage.error === "serverError") {
     const { message } = errorMessage;
-    return `The server returned an error: ${message}`;
+    return language.serverError(message);
   }
-  return "";
+  const { property, value } = errorMessage;
+  return language.illegalArgument(property, value);
 }
 describe("messages", () => {
   it("shows a message in english", () => {
@@ -62,6 +71,6 @@ describe("messages", () => {
         property: "foo",
         value: "hoo",
       })
-    ).toEqual("Noe gikk galt");
+    ).toEqual("Verdien for foo er ikke tillatt: hoo");
   });
 });
