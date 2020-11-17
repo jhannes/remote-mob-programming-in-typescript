@@ -17,19 +17,21 @@ type IError = IGeneralError | IServerError | IIllegalArgument;
 //Different error message templates for each type of error in different languages
 interface IMessageTemplate {
   generalError: string;
-  serverError: (errorMessage: string) => string;
-  illegalArgument: (key: string, value: string) => string;
+  serverError: (error: IServerError) => string;
+  illegalArgument: (error: IIllegalArgument) => string;
 }
 const english: IMessageTemplate = {
   generalError: "Something went wrong",
-  serverError: (errorMessage) =>
+  serverError: ({ errorMessage }) =>
     `The server returned an error: ${errorMessage}`,
-  illegalArgument: (key, value) => `The value is illegal for ${key} : ${value}`,
+  illegalArgument: ({ key, value }) =>
+    `The value is illegal for ${key} : ${value}`,
 };
 const norwegian: IMessageTemplate = {
   generalError: "Noe gikk galt",
-  serverError: (errorMessage) => `Serveren returnerte en feil: ${errorMessage}`,
-  illegalArgument: (key, value) =>
+  serverError: ({ errorMessage }) =>
+    `Serveren returnerte en feil: ${errorMessage}`,
+  illegalArgument: ({ key, value }) =>
     `Verdien for '${key}' er ikke tillat: ${value}`,
 };
 
@@ -39,9 +41,9 @@ function showError(messageTemplate: IMessageTemplate, error: IError): string {
     case "GeneralError":
       return messageTemplate.generalError;
     case "ServerError":
-      return messageTemplate.serverError(error.errorMessage);
+      return messageTemplate.serverError(error);
     case "IllegalArgument":
-      return messageTemplate.illegalArgument(error.key, error.value);
+      return messageTemplate.illegalArgument(error);
   }
 }
 describe("Messages", () => {
