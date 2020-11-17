@@ -4,6 +4,7 @@ const english: ApplicationLanguage = {
   illegalArgument: ({ property, value }) =>
     `The value is illegal for ${property}: ${value}`,
 };
+
 const norwegian: ApplicationLanguage = {
   generalError: () => "Noe gikk galt",
   serverError: ({ message }) => "erveren returnerte en feil: " + message,
@@ -15,13 +16,11 @@ interface GeneralError {
   error: keyof ApplicationLanguage;
 }
 
-interface ServerError {
-  error: keyof ApplicationLanguage;
+interface ServerError extends GeneralError {
   message: string;
 }
 
-interface IllegalArgument {
-  error: keyof ApplicationLanguage;
+interface IllegalArgument extends GeneralError {
   property: string;
   value: string;
 }
