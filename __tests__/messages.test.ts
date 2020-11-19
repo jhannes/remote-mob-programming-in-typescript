@@ -3,16 +3,27 @@ interface Message {
   errorMessage?: string;
 }
 
-function showMessage(language: any, message: Message) {
+function showMessage(language: ApplicationLanguage, message: Message) {
   if (message.error == "generalError") {
-    return "Something went wrong";
+    return language.generalError;
   } else if (message.error == "serverError") {
-    return "Server return an error : " + message.errorMessage;
+    return language.serverError(message.errorMessage!);
   }
 }
 
-const english = {};
-const norwegian = {};
+interface ApplicationLanguage {
+  generalError: string;
+  serverError: (message: string) => string;
+}
+
+const english: ApplicationLanguage = {
+  generalError: `Something went wrong`,
+  serverError: (message) => `Server return an error : ${message}`,
+};
+const norwegian: ApplicationLanguage = {
+  generalError: `Noe gikk galt`,
+  serverError: (message) => `The server returned an error: ${message}`,
+};
 
 describe("messages", () => {
   it("shows a message in english", () => {
