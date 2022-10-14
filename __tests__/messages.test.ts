@@ -12,6 +12,7 @@ type LanguageStrings = {
   networkError: string;
   illegalWeekday(arg: { weekday: string }): string;
   illegalEmailDomain(arg: { email: string; allowedDomains: string[] }): string;
+  joinWithOr(args: string[]): string;
 };
 type LanguageBundle = Record<Locale, LanguageStrings>;
 
@@ -21,24 +22,38 @@ const languages: LanguageBundle = {
     networkError: "En nettverksfeil har inntruffet",
     illegalWeekday: ({ weekday }) => "",
     illegalEmailDomain: () => "",
+    joinWithOr: (args: string[]) => args.join(" eller "),
   },
   en: {
     generalError: "An error has occurred",
     networkError: "",
     illegalWeekday: ({ weekday }) => `'${weekday}' is not a day of the week`,
     illegalEmailDomain: ({ email, allowedDomains }) =>
-      `Email must be in ${allowedDomains.join(" or ")}, was: ${email}`,
+      `Email must be in ${languages.en.joinWithOr(
+        allowedDomains
+      )}, was: ${email}`,
+    joinWithOr: (args: string[]) => {
+      if (args.length < 2) {
+        return args[0];
+      }
+      return (
+        [...args].slice(0, args.length - 1).join(", ") +
+        " or " +
+        args[args.length - 1]
+      );
+    },
   },
 };
 
 function localizedMessage(message: Message, locale: Locale): string {
-  if (message.code === "illegalWeekday") {
-    return languages[locale][message.code](message);
+  switch (message.code) {
+    case "illegalWeekday":
+      return languages[locale][message.code](message);
+    case "illegalEmailDomain":
+      return languages[locale][message.code](message);
+    default:
+      return languages[locale][message.code];
   }
-  if (message.code === "illegalEmailDomain") {
-    return languages[locale][message.code](message);
-  }
-  return languages[locale][message.code];
 }
 
 describe("messages", () => {
@@ -91,6 +106,21 @@ describe("messages", () => {
       )
     ).toBe(
       "Email must be in example.org, example.com or foo.example.com, was: bar@example.net"
+    );
+  });
+
+  it("shows message with single array argument", () => {
+    expect(
+      localizedMessage(
+        {
+          code: "illegalEmailDomain",
+          email: "bar@example.net",
+          allowedDomains: ["example.org"],
+        },
+        "en"
+      )
+    ).toBe(
+      "Email must be in example.org, was: bar@example.net"
     );
   });
 });
